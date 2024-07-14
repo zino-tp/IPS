@@ -22,20 +22,30 @@ def ip_lookup(ip_address):
     print("==============================")
 
     print(f"Looking up information for IP address {ip_address}...")
-    response = requests.get(f"https://ipinfo.io/{ip_address}/json")
-    data = response.json()
 
-    print("\nIP Address Information:")
-    print("==============================")
-    print(f"IP Address: {data.get('ip')}")
-    print(f"Hostname: {data.get('hostname', 'N/A')}")
-    print(f"City: {data.get('city', 'N/A')}")
-    print(f"Region: {data.get('region', 'N/A')}")
-    print(f"Country: {data.get('country', 'N/A')}")
-    print(f"Location: {data.get('loc', 'N/A')}")
-    print(f"Organization: {data.get('org', 'N/A')}")
-    print("==============================")
+    # Check if IPv4 or IPv6
+    if ':' in ip_address:
+        # IPv6 lookup using ip-api.com
+        response = requests.get(f"http://ip-api.com/json/{ip_address}")
+    else:
+        # IPv4 lookup using ipinfo.io
+        response = requests.get(f"https://ipinfo.io/{ip_address}/json")
 
+    if response.status_code == 200:
+        data = response.json()
+        print("\nIP Address Information:")
+        print("==============================")
+        print(f"IP Address: {data.get('ip')}")
+        print(f"Hostname: {data.get('hostname', 'N/A')}")
+        print(f"City: {data.get('city', 'N/A')}")
+        print(f"Region: {data.get('region', 'N/A')}")
+        print(f"Country: {data.get('country', 'N/A')}")
+        print(f"Location: {data.get('loc', 'N/A')}")
+        print(f"Organization: {data.get('org', 'N/A')}")
+        print("==============================")
+    else:
+        print(f"Fehler beim Abrufen der Informationen für IP-Adresse {ip_address}.")
+    
     input("Press Enter to continue...")
 
 def show_network_info():
@@ -72,8 +82,8 @@ if __name__ == "__main__":
             ip_address = input("Geben Sie eine IPv4 Adresse ein: ")
             ip_lookup(ip_address)
         elif choice == "2":
-            print("IPv6 Lookup wird nicht unterstützt.")
-            input("Press Enter to continue...")
+            ip_address = input("Geben Sie eine IPv6 Adresse ein: ")
+            ip_lookup(ip_address)
         elif choice == "3":
             show_network_info()
         elif choice == "4":
