@@ -1,9 +1,7 @@
-import tkinter as tk
-from tkinter import messagebox
 import requests
 from ipwhois import IPWhois
+import socket
 
-# Funktion zum Abrufen von IP-Informationen
 def get_ip_info(ip):
     try:
         obj = IPWhois(ip)
@@ -12,7 +10,6 @@ def get_ip_info(ip):
     except Exception as e:
         return str(e)
 
-# Funktion zum Abrufen der Standortinformationen
 def get_location_info(ip):
     try:
         response = requests.get(f'http://ip-api.com/json/{ip}')
@@ -20,22 +17,26 @@ def get_location_info(ip):
     except Exception as e:
         return str(e)
 
-# Funktion, um die eigene öffentliche IP-Adresse zu erhalten
 def get_public_ip():
     try:
-        response = requests.get('https://api.ipify.org?format=json')
-        return response.json().get('ip')
+        # Automatisch die öffentliche IP-Adresse des Geräts abrufen
+        s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
+        s.connect(("8.8.8.8", 80))
+        ip = s.getsockname()[0]
+        s.close()
+        return ip
     except Exception as e:
         return str(e)
 
-# Funktion, die ausgeführt wird, wenn der Button geklickt wird
-def track_ip():
-    choice = selection.get()
-    if choice == "My Infos":
+def track_ip(ip_choice):
+    if ip_choice == "Enter IP":
+        ip = input("Geben Sie eine IPv4 oder IPv6 Adresse ein: ")
+    elif ip_choice == "My Infos":
         ip = get_public_ip()
     else:
-        ip = entry.get()
-    
+        print("Ungültige Auswahl.")
+        return
+
     ip_info = get_ip_info(ip)
     location_info = get_location_info(ip)
 
@@ -50,7 +51,7 @@ def track_ip():
         ASN-Registry: {ip_info.get('asn_registry')}
         """
     else:
-        ip_details = ip_info
+        ip_details = f"Fehler beim Abrufen der IP-Informationen: {ip_info}"
 
     if isinstance(location_info, dict) and location_info.get('status') == 'success':
         location_details = f"""
@@ -64,25 +65,18 @@ def track_ip():
     else:
         location_details = "Keine Standortinformationen verfügbar."
 
-    messagebox.showinfo("IP-Informationen", f"{ip_details}\n\n{location_details}")
+    print(ip_details)
+    print(location_details)
 
-# Erstellen des GUI-Fensters
-root = tk.Tk()
-root.title("IP Tracker")
+if __name__ == "__main__":
+    print("Wählen Sie aus:")
+    print("1. Enter IP")
+    print("2. My Infos")
+    choice = input("Ihre Auswahl (1/2): ")
 
-label = tk.Label(root, text="Geben Sie eine IPv4 oder IPv6 Adresse ein:")
-label.pack(pady=10)
-
-entry = tk.Entry(root, width=50)
-entry.pack(pady=5)
-
-selection = tk.StringVar(value="Enter IP")
-radio1 = tk.Radiobutton(root, text="Enter IP", variable=selection, value="Enter IP")
-radio1.pack(anchor=tk.W)
-radio2 = tk.Radiobutton(root, text="My Infos", variable=selection, value="My Infos")
-radio2.pack(anchor=tk.W)
-
-button = tk.Button(root, text="Track IP", command=track_ip)
-button.pack(pady=20)
-
-root.mainloop()
+    if choice == "1":
+        track_ip("Enter IP")
+    elif choice == "2":
+        track_ip("My Infos")
+    else:
+        print("Ungültige Auswahl.")
