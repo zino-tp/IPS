@@ -28,22 +28,24 @@ def display_ip_info(data):
     print("----------------------")
 
 def get_local_ip_address(ip_type):
-    if ip_type == 'IPv4':
-        return socket.gethostbyname(socket.gethostname())
-    elif ip_type == 'IPv6':
-        return socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET6)[0][4][0]
+    try:
+        if ip_type == 'IPv4':
+            return socket.gethostbyname(socket.gethostname())
+        elif ip_type == 'IPv6':
+            return socket.getaddrinfo(socket.gethostname(), None, socket.AF_INET6)[0][4][0]
+    except socket.gaierror as e:
+        print(f"Error retrieving {ip_type} address: {e}")
+        return None
 
 def display_my_info():
     ipv4 = get_local_ip_address('IPv4')
     ipv6 = get_local_ip_address('IPv6')
-    wlan_ipv4 = ipv4  # Assuming WLAN IPv4 is the same as the local IPv4
-    wlan_ipv6 = ipv6  # Assuming WLAN IPv6 is the same as the local IPv6
     
     print("\n--- My Information ---")
-    print(f"IPv4: {ipv4}")
-    print(f"IPv6: {ipv6}")
-    print(f"WLAN IPv4: {wlan_ipv4}")
-    print(f"WLAN IPv6: {wlan_ipv6}")
+    print(f"IPv4: {ipv4 if ipv4 else 'Not available'}")
+    print(f"IPv6: {ipv6 if ipv6 else 'Not available'}")
+    print(f"WLAN IPv4: {ipv4 if ipv4 else 'Not available'}")
+    print(f"WLAN IPv6: {ipv6 if ipv6 else 'Not available'}")
     print("----------------------")
 
 def main():
@@ -75,7 +77,10 @@ def main():
 
         if choice in ['3', '4']:
             ip_address = get_local_ip_address(ip_type.split()[1])
-            print(f"Your current {ip_type} is: {ip_address}")
+            if ip_address:
+                print(f"Your current {ip_type} is: {ip_address}")
+            else:
+                print(f"Could not retrieve {ip_type}.")
         else:
             ip_address = input(f"Enter the {ip_type} you want to track: ")
 
